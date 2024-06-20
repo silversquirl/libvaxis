@@ -18,6 +18,8 @@ env_map: *const std.process.EnvMap,
 
 pty: Pty,
 
+start_stopped: bool = false,
+
 pub fn spawn(self: *Command, allocator: std.mem.Allocator) !void {
     var arena_allocator = std.heap.ArenaAllocator.init(allocator);
     defer arena_allocator.deinit();
@@ -48,6 +50,10 @@ pub fn spawn(self: *Command, allocator: std.mem.Allocator) !void {
 
         if (self.working_directory) |wd| {
             try std.posix.chdir(wd);
+        }
+
+        if (self.start_stopped) {
+            try std.posix.raise(std.posix.SIG.STOP);
         }
 
         // exec
